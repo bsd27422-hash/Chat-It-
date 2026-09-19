@@ -11,8 +11,6 @@
             --text-color: #f8fafc;
             --accent-color: #3b82f6;
             --accent-hover: #2563eb;
-            --google-color: #ea4335;
-            --google-hover: #d33828;
             --error-color: #ef4444;
             --border-color: #334155;
         }
@@ -75,12 +73,6 @@
         button:hover {
             background-color: var(--accent-hover);
         }
-        .google-btn {
-            background-color: var(--google-color);
-        }
-        .google-btn:hover {
-            background-color: var(--google-hover);
-        }
         .switch-mode {
             text-align: center;
             margin-top: 1rem;
@@ -102,23 +94,6 @@
         .hidden {
             display: none;
         }
-        .divider {
-            text-align: center;
-            margin: 1rem 0;
-            color: #64748b;
-            font-size: 0.85rem;
-            position: relative;
-        }
-        .divider::before, .divider::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background-color: var(--border-color);
-        }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
     </style>
 </head>
 <body>
@@ -139,10 +114,6 @@
         
         <button id="signup-btn">Create Account & Launch</button>
         <div class="error-msg" id="signup-error"></div>
-        
-        <div class="divider">OR</div>
-        
-        <button class="google-btn" id="google-signup-btn">Continue with Google</button>
 
         <div class="switch-mode">
             Already have an account? <span id="to-login">Log In</span>
@@ -165,10 +136,6 @@
         
         <button id="login-btn">Log In</button>
         <div class="error-msg" id="login-error">Account not available</div>
-        
-        <div class="divider">OR</div>
-        
-        <button class="google-btn" id="google-login-btn">Log In with Google</button>
 
         <div class="switch-mode">
             Don't have an account? <span id="to-signup">Create Account</span>
@@ -182,34 +149,7 @@
         <button id="logout-btn" style="background-color: #ef4444;">Log Out / Switch Account</button>
     </div>
 
-    <!-- Firebase SDK Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signInWithRedirect, 
-            getRedirectResult,
-            GoogleAuthProvider, 
-            signOut, 
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        // Remember to replace with your actual Firebase configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-
+    <script>
         const signupContainer = document.getElementById('signup-container');
         const loginContainer = document.getElementById('login-container');
         const appContainer = document.getElementById('app-container');
@@ -219,8 +159,6 @@
 
         const signupBtn = document.getElementById('signup-btn');
         const loginBtn = document.getElementById('login-btn');
-        const googleSignupBtn = document.getElementById('google-signup-btn');
-        const googleLoginBtn = document.getElementById('google-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
 
         const suEmail = document.getElementById('su-email');
@@ -232,24 +170,17 @@
         const loginError = document.getElementById('login-error');
         const userGreeting = document.getElementById('user-greeting');
 
-        // Handle Google redirect result when user returns back to the page
-        getRedirectResult(auth).catch((error) => {
-            console.error("Google redirect error:", error.message);
-        });
+        // Check for active session
+        const savedSession = localStorage.getItem('chat_it_user');
+        if (savedSession) {
+            const userData = JSON.parse(savedSession);
+            userGreeting.textContent = userData.email;
+            signupContainer.classList.add('hidden');
+            loginContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+        }
 
-        // Monitor Auth state changes
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userGreeting.textContent = user.displayName || user.email;
-                signupContainer.classList.add('hidden');
-                loginContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-            } else {
-                appContainer.classList.add('hidden');
-                signupContainer.classList.remove('hidden');
-            }
-        });
-
+        // Toggle forms
         toLogin.addEventListener('click', () => {
             signupContainer.classList.add('hidden');
             loginContainer.classList.remove('hidden');
@@ -262,7 +193,8 @@
             signupError.style.display = 'none';
         });
 
-        signupBtn.addEventListener('click', async () => {
+        // Sign Up Handler
+        signupBtn.addEventListener('click', () => {
             const email = suEmail.value.trim();
             const password = suPassword.value.trim();
 
@@ -272,15 +204,17 @@
                 return;
             }
 
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                signupError.textContent = error.message;
-                signupError.style.display = 'block';
-            }
+            const newUser = { email, password };
+            localStorage.setItem('chat_it_registered_user', JSON.stringify(newUser));
+            localStorage.setItem('chat_it_user', JSON.stringify(newUser));
+
+            userGreeting.textContent = email;
+            signupContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
         });
 
-        loginBtn.addEventListener('click', async () => {
+        // Regular Login Handler with "Account not available" check
+        loginBtn.addEventListener('click', () => {
             const identifier = liEmail.value.trim();
             const password = liPassword.value.trim();
 
@@ -290,28 +224,35 @@
                 return;
             }
 
-            try {
-                await signInWithEmailAndPassword(auth, identifier, password);
-            } catch (error) {
+            const registeredData = localStorage.getItem('chat_it_registered_user');
+            
+            if (!registeredData) {
+                loginError.textContent = 'Account not available';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            const registeredUser = JSON.parse(registeredData);
+
+            if (registeredUser.email === identifier && registeredUser.password === password) {
+                localStorage.setItem('chat_it_user', JSON.stringify(registeredUser));
+                userGreeting.textContent = registeredUser.email;
+                loginContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+            } else {
                 loginError.textContent = 'Account not available';
                 loginError.style.display = 'block';
             }
         });
 
-        // Use Redirect instead of Popup for mobile browser stability
-        const handleGoogleAuth = async () => {
-            try {
-                await signInWithRedirect(auth, googleProvider);
-            } catch (error) {
-                alert('Google Sign-In failed: ' + error.message);
-            }
-        };
-
-        googleSignupBtn.addEventListener('click', handleGoogleAuth);
-        googleLoginBtn.addEventListener('click', handleGoogleAuth);
-
-        logoutBtn.addEventListener('click', async () => {
-            await signOut(auth);
+        // Logout Handler
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('chat_it_user');
+            appContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            liEmail.value = '';
+            liPassword.value = '';
+            loginError.style.display = 'none';
         });
     </script>
 </body>
