@@ -11,6 +11,8 @@
             --text-color: #f8fafc;
             --accent-color: #3b82f6;
             --accent-hover: #2563eb;
+            --google-color: #ea4335;
+            --google-hover: #d33828;
             --border-color: #334155;
         }
         body {
@@ -32,6 +34,7 @@
             width: 100%;
             max-width: 400px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            box-sizing: border-box;
         }
         h1 {
             text-align: center;
@@ -47,7 +50,7 @@
             font-size: 0.9rem;
             color: #94a3b8;
         }
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
             width: 100%;
             padding: 0.75rem;
             border-radius: 6px;
@@ -66,84 +69,220 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 1rem;
+            margin-top: 0.75rem;
         }
         button:hover {
             background-color: var(--accent-hover);
         }
+        .google-btn {
+            background-color: var(--google-color);
+        }
+        .google-btn:hover {
+            background-color: var(--google-hover);
+        }
+        .switch-mode {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .switch-mode span {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
         .hidden {
             display: none;
         }
+        .divider {
+            text-align: center;
+            margin: 1rem 0;
+            color: #64748b;
+            font-size: 0.85rem;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background-color: var(--border-color);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="auth-container">
+    <!-- Sign Up Screen -->
+    <div class="container" id="signup-container">
         <h1>Chat It !</h1>
-        <div id="setup-screen">
-            <div class="form-group">
-                <label for="username">Username (Account ID)</label>
-                <input type="text" id="username" placeholder="e.g. CyberNinja">
-            </div>
-            <div class="form-group">
-                <label for="display-name">Display Name</label>
-                <input type="text" id="display-name" placeholder="e.g. Alex ✨">
-            </div>
-            <div class="form-group">
-                <label for="profile-pic">Profile Photo (Camera / Gallery)</label>
-                <input type="file" id="profile-pic" accept="image/*">
-            </div>
-            <button id="launch-btn">Create Account & Launch App</button>
+        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Create New Account</h3>
+        
+        <div class="form-group">
+            <label for="su-username">Username (Account ID)</label>
+            <input type="text" id="su-username" placeholder="e.g. CyberNinja">
+        </div>
+        <div class="form-group">
+            <label for="su-display">Display Name</label>
+            <input type="text" id="su-display" placeholder="e.g. Alex ✨">
+        </div>
+        <div class="form-group">
+            <label for="su-email">Email Address</label>
+            <input type="email" id="su-email" placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+            <label for="su-password">Password</label>
+            <input type="password" id="su-password" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+            <label for="su-pic">Profile Photo (Camera / Gallery)</label>
+            <input type="file" id="su-pic" accept="image/*">
+        </div>
+        
+        <button id="signup-btn">Create Account & Launch</button>
+        
+        <div class="divider">OR</div>
+        
+        <button class="google-btn" id="google-signup-btn">Continue with Google</button>
+
+        <div class="switch-mode">
+            Already have an account? <span id="to-login">Log In</span>
         </div>
     </div>
 
+    <!-- Login Screen -->
+    <div class="container hidden" id="login-container">
+        <h1>Chat It !</h1>
+        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Log In</h3>
+        
+        <div class="form-group">
+            <label for="li-email">Email Address</label>
+            <input type="email" id="li-email" placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+            <label for="li-password">Password</label>
+            <input type="password" id="li-password" placeholder="••••••••">
+        </div>
+        
+        <button id="login-btn">Log In</button>
+        
+        <div class="divider">OR</div>
+        
+        <button class="google-btn" id="google-login-btn">Log In with Google</button>
+
+        <div class="switch-mode">
+            Don't have an account? <span id="to-signup">Create Account</span>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
     <div class="container hidden" id="app-container">
         <h1>Welcome, <span id="user-greeting"></span>!</h1>
-        <p style="text-align: center; color: #94a3b8;">You are now logged in and connected to the multiverse.</p>
+        <p style="text-align: center; color: #94a3b8;">You are successfully logged in and connected to the multiverse.</p>
         <button id="logout-btn" style="background-color: #ef4444;">Log Out / Switch Account</button>
     </div>
 
     <script>
-        const launchBtn = document.getElementById('launch-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const authContainer = document.getElementById('auth-container');
+        const signupContainer = document.getElementById('signup-container');
+        const loginContainer = document.getElementById('login-container');
         const appContainer = document.getElementById('app-container');
-        const usernameInput = document.getElementById('username');
-        const displayNameInput = document.getElementById('display-name');
+
+        const toLogin = document.getElementById('to-login');
+        const toSignup = document.getElementById('to-signup');
+
+        const signupBtn = document.getElementById('signup-btn');
+        const loginBtn = document.getElementById('login-btn');
+        const googleSignupBtn = document.getElementById('google-signup-btn');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const suUsername = document.getElementById('su-username');
+        const suDisplay = document.getElementById('su-display');
+        const suEmail = document.getElementById('su-email');
+        const suPassword = document.getElementById('su-password');
+        const liEmail = document.getElementById('li-email');
+        const liPassword = document.getElementById('li-password');
         const userGreeting = document.getElementById('user-greeting');
 
-        // Check if user session already exists
+        // Check for active session
         const savedUser = localStorage.getItem('chat_it_user');
         if (savedUser) {
             const userData = JSON.parse(savedUser);
-            userGreeting.textContent = userData.displayName;
-            authContainer.classList.add('hidden');
+            userGreeting.textContent = userData.displayName || userData.email;
+            signupContainer.classList.add('hidden');
+            loginContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
         }
 
-        launchBtn.addEventListener('click', () => {
-            const username = usernameInput.value.trim();
-            const displayName = displayNameInput.value.trim() || username;
+        // Toggle between forms
+        toLogin.addEventListener('click', () => {
+            signupContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+        });
 
-            if (!username) {
-                alert('Please enter a username to proceed.');
+        toSignup.addEventListener('click', () => {
+            loginContainer.classList.add('hidden');
+            signupContainer.classList.remove('hidden');
+        });
+
+        // Sign Up Handler
+        signupBtn.addEventListener('click', () => {
+            const username = suUsername.value.trim();
+            const displayName = suDisplay.value.trim() || username;
+            const email = suEmail.value.trim();
+            const password = suPassword.value.trim();
+
+            if (!email || !password || !username) {
+                alert('Please fill in all required fields (Username, Email, and Password).');
                 return;
             }
 
-            const userData = { username, displayName };
+            const userData = { username, displayName, email };
             localStorage.setItem('chat_it_user', JSON.stringify(userData));
 
             userGreeting.textContent = displayName;
-            authContainer.classList.add('hidden');
+            signupContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
         });
 
+        // Regular Login Handler
+        loginBtn.addEventListener('click', () => {
+            const email = liEmail.value.trim();
+            const password = liPassword.value.trim();
+
+            if (!email || !password) {
+                alert('Please enter your email and password.');
+                return;
+            }
+
+            const userData = { username: email.split('@')[0], displayName: email.split('@')[0], email };
+            localStorage.setItem('chat_it_user', JSON.stringify(userData));
+
+            userGreeting.textContent = userData.displayName;
+            loginContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+        });
+
+        // Google Authentication Simulation
+        const handleGoogleAuth = () => {
+            const userData = { username: 'GoogleUser', displayName: 'Google User ✨', email: 'user@gmail.com' };
+            localStorage.setItem('chat_it_user', JSON.stringify(userData));
+            userGreeting.textContent = userData.displayName;
+            signupContainer.classList.add('hidden');
+            loginContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+        };
+
+        googleSignupBtn.addEventListener('click', handleGoogleAuth);
+        googleLoginBtn.addEventListener('click', handleGoogleAuth);
+
+        // Logout Handler
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('chat_it_user');
             appContainer.classList.add('hidden');
-            authContainer.classList.remove('hidden');
-            usernameInput.value = '';
-            displayNameInput.value = '';
+            signupContainer.classList.remove('hidden');
         });
     </script>
 </body>
