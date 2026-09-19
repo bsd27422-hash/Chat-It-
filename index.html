@@ -13,6 +13,7 @@
             --accent-hover: #2563eb;
             --google-color: #ea4335;
             --google-hover: #d33828;
+            --error-color: #ef4444;
             --border-color: #334155;
         }
         body {
@@ -91,6 +92,13 @@
             color: var(--accent-color);
             text-decoration: underline;
         }
+        .error-msg {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            display: none;
+        }
         .hidden {
             display: none;
         }
@@ -142,6 +150,7 @@
         </div>
         
         <button id="signup-btn">Create Account & Launch</button>
+        <div class="error-msg" id="signup-error"></div>
         
         <div class="divider">OR</div>
         
@@ -158,8 +167,8 @@
         <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Log In</h3>
         
         <div class="form-group">
-            <label for="li-email">Email Address</label>
-            <input type="email" id="li-email" placeholder="name@example.com">
+            <label for="li-email">Email Address or Username</label>
+            <input type="text" id="li-email" placeholder="name@example.com or Username">
         </div>
         <div class="form-group">
             <label for="li-password">Password</label>
@@ -167,6 +176,7 @@
         </div>
         
         <button id="login-btn">Log In</button>
+        <div class="error-msg" id="login-error">Account not available</div>
         
         <div class="divider">OR</div>
         
@@ -204,13 +214,16 @@
         const suPassword = document.getElementById('su-password');
         const liEmail = document.getElementById('li-email');
         const liPassword = document.getElementById('li-password');
+        
+        const signupError = document.getElementById('signup-error');
+        const loginError = document.getElementById('login-error');
         const userGreeting = document.getElementById('user-greeting');
 
         // Check for active session
-        const savedUser = localStorage.getItem('chat_it_user');
-        if (savedUser) {
-            const userData = JSON.parse(savedUser);
-            userGreeting.textContent = userData.displayName || userData.email;
+        const savedSession = localStorage.getItem('chat_it_user');
+        if (savedSession) {
+            const userData = JSON.parse(savedSession);
+            userGreeting.textContent = userData.displayName || userData.username;
             signupContainer.classList.add('hidden');
             loginContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
@@ -220,11 +233,13 @@
         toLogin.addEventListener('click', () => {
             signupContainer.classList.add('hidden');
             loginContainer.classList.remove('hidden');
+            loginError.style.display = 'none';
         });
 
         toSignup.addEventListener('click', () => {
             loginContainer.classList.add('hidden');
             signupContainer.classList.remove('hidden');
+            signupError.style.display = 'none';
         });
 
         // Sign Up Handler
@@ -235,41 +250,59 @@
             const password = suPassword.value.trim();
 
             if (!email || !password || !username) {
-                alert('Please fill in all required fields (Username, Email, and Password).');
+                signupError.textContent = 'Please fill in all required fields.';
+                signupError.style.display = 'block';
                 return;
             }
 
-            const userData = { username, displayName, email };
-            localStorage.setItem('chat_it_user', JSON.stringify(userData));
+            const newUser = { username, displayName, email, password };
+            // Save registered user database locally
+            localStorage.setItem('chat_it_registered_user', JSON.stringify(newUser));
+            localStorage.setItem('chat_it_user', JSON.stringify(newUser));
 
             userGreeting.textContent = displayName;
             signupContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
         });
 
-        // Regular Login Handler
+        // Regular Login Handler with "Account not available" check
         loginBtn.addEventListener('click', () => {
-            const email = liEmail.value.trim();
+            const identifier = liEmail.value.trim();
             const password = liPassword.value.trim();
 
-            if (!email || !password) {
-                alert('Please enter your email and password.');
+            if (!identifier || !password) {
+                loginError.textContent = 'Please enter your login details.';
+                loginError.style.display = 'block';
                 return;
             }
 
-            const userData = { username: email.split('@')[0], displayName: email.split('@')[0], email };
-            localStorage.setItem('chat_it_user', JSON.stringify(userData));
+            const registeredData = localStorage.getItem('chat_it_registered_user');
+            
+            if (!registeredData) {
+                loginError.textContent = 'Account not available';
+                loginError.style.display = 'block';
+                return;
+            }
 
-            userGreeting.textContent = userData.displayName;
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+            const registeredUser = JSON.parse(registeredData);
+
+            // Check if email or username matches and password matches
+            if ((registeredUser.email === identifier || registeredUser.username === identifier) && registeredUser.password === password) {
+                localStorage.setItem('chat_it_user', JSON.stringify(registeredUser));
+                userGreeting.textContent = registeredUser.displayName || registeredUser.username;
+                loginContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+            } else {
+                loginError.textContent = 'Account not available';
+                loginError.style.display = 'block';
+            }
         });
 
         // Google Authentication Simulation
         const handleGoogleAuth = () => {
-            const userData = { username: 'GoogleUser', displayName: 'Google User ✨', email: 'user@gmail.com' };
-            localStorage.setItem('chat_it_user', JSON.stringify(userData));
-            userGreeting.textContent = userData.displayName;
+            const googleUser = { username: 'GoogleUser', displayName: 'Google User ✨', email: 'user@gmail.com' };
+            localStorage.setItem('chat_it_user', JSON.stringify(googleUser));
+            userGreeting.textContent = googleUser.displayName;
             signupContainer.classList.add('hidden');
             loginContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
@@ -282,7 +315,10 @@
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('chat_it_user');
             appContainer.classList.add('hidden');
-            signupContainer.classList.remove('hidden');
+            loginContainer.classList.remove('hidden');
+            liEmail.value = '';
+            liPassword.value = '';
+            loginError.style.display = 'none';
         });
     </script>
 </body>
