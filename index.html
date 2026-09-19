@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat It ! - V5 (Updated)</title>
+    <title>Chat It ! - V6 (Updated)</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -101,8 +101,12 @@
     <!-- Sign Up Screen -->
     <div class="container" id="signup-container">
         <h1>Chat It !</h1>
-        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Create New Account (V5)</h3>
+        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Create New Account (V6)</h3>
         
+        <div class="form-group">
+            <label for="su-username">Username</label>
+            <input type="text" id="su-username" placeholder="Choose a username">
+        </div>
         <div class="form-group">
             <label for="su-email">Email Address</label>
             <input type="email" id="su-email" placeholder="name@example.com">
@@ -110,6 +114,10 @@
         <div class="form-group">
             <label for="su-password">Password</label>
             <input type="password" id="su-password" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+            <label for="su-confirm-password">Verify Password</label>
+            <input type="password" id="su-confirm-password" placeholder="••••••••">
         </div>
         
         <button id="signup-btn">Create Account & Launch</button>
@@ -126,8 +134,8 @@
         <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Log In</h3>
         
         <div class="form-group">
-            <label for="li-email">Email Address or Username</label>
-            <input type="text" id="li-email" placeholder="name@example.com or Username">
+            <label for="li-identifier">Email Address or Username</label>
+            <input type="text" id="li-identifier" placeholder="name@example.com or Username">
         </div>
         <div class="form-group">
             <label for="li-password">Password</label>
@@ -161,9 +169,12 @@
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
 
+        const suUsername = document.getElementById('su-username');
         const suEmail = document.getElementById('su-email');
         const suPassword = document.getElementById('su-password');
-        const liEmail = document.getElementById('li-email');
+        const suConfirmPassword = document.getElementById('su-confirm-password');
+
+        const liIdentifier = document.getElementById('li-identifier');
         const liPassword = document.getElementById('li-password');
         
         const signupError = document.getElementById('signup-error');
@@ -174,7 +185,7 @@
         const savedSession = localStorage.getItem('chat_it_user');
         if (savedSession) {
             const userData = JSON.parse(savedSession);
-            userGreeting.textContent = userData.email;
+            userGreeting.textContent = userData.username || userData.email;
             signupContainer.classList.add('hidden');
             loginContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
@@ -195,27 +206,35 @@
 
         // Sign Up Handler
         signupBtn.addEventListener('click', () => {
+            const username = suUsername.value.trim();
             const email = suEmail.value.trim();
             const password = suPassword.value.trim();
+            const confirmPassword = suConfirmPassword.value.trim();
 
-            if (!email || !password) {
-                signupError.textContent = 'Please fill in email and password.';
+            if (!username || !email || !password || !confirmPassword) {
+                signupError.textContent = 'Please fill in all fields.';
                 signupError.style.display = 'block';
                 return;
             }
 
-            const newUser = { email, password };
+            if (password !== confirmPassword) {
+                signupError.textContent = 'Passwords do not match.';
+                signupError.style.display = 'block';
+                return;
+            }
+
+            const newUser = { username, email, password };
             localStorage.setItem('chat_it_registered_user', JSON.stringify(newUser));
             localStorage.setItem('chat_it_user', JSON.stringify(newUser));
 
-            userGreeting.textContent = email;
+            userGreeting.textContent = username;
             signupContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
         });
 
         // Regular Login Handler with "Account not available" check
         loginBtn.addEventListener('click', () => {
-            const identifier = liEmail.value.trim();
+            const identifier = liIdentifier.value.trim();
             const password = liPassword.value.trim();
 
             if (!identifier || !password) {
@@ -234,9 +253,12 @@
 
             const registeredUser = JSON.parse(registeredData);
 
-            if (registeredUser.email === identifier && registeredUser.password === password) {
+            const matchesUser = (registeredUser.email === identifier || registeredUser.username === identifier);
+            const matchesPassword = (registeredUser.password === password);
+
+            if (matchesUser && matchesPassword) {
                 localStorage.setItem('chat_it_user', JSON.stringify(registeredUser));
-                userGreeting.textContent = registeredUser.email;
+                userGreeting.textContent = registeredUser.username || registeredUser.email;
                 loginContainer.classList.add('hidden');
                 appContainer.classList.remove('hidden');
             } else {
@@ -250,7 +272,7 @@
             localStorage.removeItem('chat_it_user');
             appContainer.classList.add('hidden');
             loginContainer.classList.remove('hidden');
-            liEmail.value = '';
+            liIdentifier.value = '';
             liPassword.value = '';
             loginError.style.display = 'none';
         });
