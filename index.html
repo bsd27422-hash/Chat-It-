@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat It ! - V6 (Updated)</title>
+    <title>Chat It ! - V7</title>
     <style>
         :root {
             --accent-color: #ff3366;
@@ -12,6 +12,17 @@
             --accent-hover: #e02e5b;
             --bg-color: #1a1b1e;
             --border-color: #343a40;
+            --sidebar-bg: #1f2023;
+        }
+
+        .light-theme {
+            --accent-color: #ff3366;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --accent-hover: #e02e5b;
+            --bg-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --sidebar-bg: #f1f3f5;
         }
 
         body {
@@ -30,7 +41,7 @@
             background-color: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
             box-sizing: border-box;
@@ -39,7 +50,6 @@
         h2 {
             text-align: center;
             margin-bottom: 24px;
-            color: var(--text-color);
         }
 
         .form-group {
@@ -58,7 +68,7 @@
             padding: 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            background-color: #141517;
+            background-color: var(--bg-color);
             color: var(--text-color);
             font-size: 16px;
             box-sizing: border-box;
@@ -99,10 +109,6 @@
             cursor: pointer;
         }
 
-        .switch-text a:hover {
-            text-decoration: underline;
-        }
-
         .error-msg {
             color: #fa5252;
             font-size: 13px;
@@ -110,109 +116,150 @@
             display: none;
         }
 
-        /* Welcome / Transition Screen Styles */
-        #welcome-screen {
+        /* App Layout Styles */
+        #app-screen {
             display: none;
-            text-align: center;
+            width: 90vw;
+            max-width: 850px;
+            height: 85vh;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: none;
+            flex-direction: row;
         }
 
-        /* Chat Interface Styles */
-        #chat-screen {
-            display: none;
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
             flex-direction: column;
-            height: 90vh;
-            max-width: 600px;
-            width: 100%;
         }
 
-        .chat-header {
+        .sidebar-header {
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 15px;
         }
 
-        .chat-messages {
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .chat-list {
             flex: 1;
-            background-color: #141517;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
             overflow-y: auto;
-            margin-bottom: 15px;
+        }
+
+        .chat-item {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-item:hover, .chat-item.active {
+            background-color: rgba(255, 51, 102, 0.1);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online { background-color: #40c057; }
+        .status-dot.offline { background-color: #adb5bd; }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header-bar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .message {
-            background-color: #2b2c33;
+        .message-bubble {
+            background-color: var(--sidebar-bg);
             padding: 10px 14px;
             border-radius: 8px;
-            max-width: 80%;
+            max-width: 70%;
             word-break: break-word;
         }
 
-        .message.user {
+        .message-bubble.user {
             background-color: var(--accent-color);
+            color: white;
             align-self: flex-end;
         }
 
-        .chat-input-area {
+        .chat-input-bar {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
         }
 
-        .chat-input-area input {
-            flex: 1;
-            margin: 0;
-        }
-
-        .chat-input-area button {
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
             width: auto;
             margin: 0;
-            padding: 0 20px;
+            padding: 5px;
         }
 
-        .logout-btn {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
-            color: #adb5bd;
-            padding: 6px 12px;
-            width: auto;
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            background-color: #343a40;
-            color: white;
+        .top-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
 
+    <div class="top-controls">
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+    </div>
+
     <!-- Sign Up Screen -->
     <div id="signup-screen" class="container">
-        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Create New Account</span></h2>
+        <h2>Chat It !<br><span style="font-size: 14px; color: #adb5bd;">Sign Up</span></h2>
         <div class="form-group">
-            <label for="signup-username">Username</label>
-            <input type="text" id="signup-username" placeholder="Choose a username">
+            <label>Username</label>
+            <input type="text" id="signup-username" placeholder="Unique username">
         </div>
         <div class="form-group">
-            <label for="signup-email">Email Address</label>
-            <input type="email" id="signup-email" placeholder="name@example.com">
-        </div>
-        <div class="form-group">
-            <label for="signup-password">Password</label>
+            <label>Password</label>
             <input type="password" id="signup-password" placeholder="••••••••">
-        </div>
-        <div class="form-group">
-            <label for="signup-verify-password">Verify Password</label>
-            <input type="password" id="signup-verify-password" placeholder="••••••••">
-            <div id="signup-error" class="error-msg">Passwords do not match!</div>
+            <div id="signup-error" class="error-msg">Username already taken or invalid!</div>
         </div>
         <button onclick="handleSignUp()">Create Account</button>
         <div class="switch-text">
@@ -222,140 +269,217 @@
 
     <!-- Login Screen -->
     <div id="login-screen" class="container" style="display: none;">
-        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Log In</span></h2>
+        <h2>Chat It !<br><span style="font-size: 14px; color: #adb5bd;">Log In</span></h2>
         <div class="form-group">
-            <label for="login-user">Email Address or Username</label>
-            <input type="text" id="login-user" placeholder="name@example.com or Username">
+            <label>Username</label>
+            <input type="text" id="login-username" placeholder="Your username">
         </div>
         <div class="form-group">
-            <label for="login-password">Password</label>
+            <label>Password</label>
             <input type="password" id="login-password" placeholder="••••••••">
-            <div id="login-error" class="error-msg">Account not available</div>
+            <div id="login-error" class="error-msg">Account not found or wrong password</div>
         </div>
         <button onclick="handleLogin()">Log In</button>
         <div class="switch-text">
-            Don't have an account? <a onclick="showScreen('signup-screen')">Create Account</a>
+            Don't have an account? <a onclick="showScreen('signup-screen')">Sign Up</a>
         </div>
     </div>
 
-    <!-- Welcome / Transition Screen -->
-    <div id="welcome-screen" class="container">
-        <h2 id="welcome-title">Welcome!</h2>
-        <p style="color: #adb5bd; margin-bottom: 24px;">You are successfully logged in.</p>
-        <button onclick="openChat()">Let's Chat</button>
-        <button class="logout-btn" onclick="handleLogout()" style="width: 100%; margin-top: 10px;">Log Out / Switch Account</button>
-    </div>
-
-    <!-- Chat Interface Screen -->
-    <div id="chat-screen" class="container">
-        <div class="chat-header">
-            <h3 id="chat-username" style="margin: 0;">Chat Room</h3>
-            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+    <!-- Main Chat App Interface -->
+    <div id="app-screen">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3 id="current-user-display">Chats</h3>
+                <button class="icon-btn" onclick="openNewChatPrompt()" title="New Chat">+</button>
+            </div>
+            <div class="chat-list" id="chat-list">
+                <!-- Dynamic Chat List -->
+            </div>
         </div>
-        <div id="chat-messages" class="chat-messages">
-            <div class="message">Welcome to Chat It ! Start messaging below.</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="message-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Send</button>
+        <div class="chat-main">
+            <div class="chat-header-bar">
+                <span id="active-chat-title" style="font-weight: bold;">Select a chat</span>
+                <button class="icon-btn" onclick="handleLogout()" title="Log Out" style="font-size: 14px; color: #fa5252;">Log Out</button>
+            </div>
+            <div class="messages-container" id="messages-container">
+                <div style="color: #adb5bd; text-align: center; margin-top: auto; margin-bottom: auto;">Select or start a new chat to begin messaging.</div>
+            </div>
+            <div class="chat-input-bar" id="chat-input-bar" style="display: none;">
+                <input type="text" id="message-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" style="width: auto; margin:0; padding: 0 20px;">Send</button>
+            </div>
         </div>
     </div>
 
     <script>
+        let currentUser = null;
+        let currentChatUser = null;
+
         function showScreen(screenId) {
             document.getElementById('signup-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'none';
-            document.getElementById(screenId).style.display = 'flex';
+            document.getElementById('app-screen').style.display = 'none';
+            
+            if (screenId === 'app-screen') {
+                document.getElementById('app-screen').style.display = 'flex';
+            } else {
+                document.getElementById(screenId).style.display = 'block';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
         }
 
         function handleSignUp() {
             const username = document.getElementById('signup-username').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
-            const verifyPassword = document.getElementById('signup-verify-password').value;
             const errorDiv = document.getElementById('signup-error');
 
-            if (password !== verifyPassword) {
+            if (!username || !password) return;
+
+            let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+            if (users[username]) {
                 errorDiv.style.display = 'block';
                 return;
             }
-            errorDiv.style.display = 'none';
 
-            if (!username || !email || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
+            users[username] = { password, online: true };
+            localStorage.setItem('chat_all_users', JSON.stringify(users));
 
-            const userData = { username, email, password };
-            localStorage.setItem('chat_user', JSON.stringify(userData));
-            
-            showWelcome(username);
+            currentUser = username;
+            localStorage.setItem('chat_logged_user', currentUser);
+            initApp();
         }
 
         function handleLogin() {
-            const userInput = document.getElementById('login-user').value.trim();
+            const username = document.getElementById('login-username').value.trim();
             const password = document.getElementById('login-password').value;
             const errorDiv = document.getElementById('login-error');
 
-            const savedData = localStorage.getItem('chat_user');
-            if (!savedData) {
+            let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+            if (!users[username] || users[username].password !== password) {
                 errorDiv.style.display = 'block';
                 return;
             }
 
-            const user = JSON.parse(savedData);
-            if ((userInput === user.email || userInput === user.username) && password === user.password) {
-                errorDiv.style.display = 'none';
-                showWelcome(user.username);
-            } else {
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        function showWelcome(username) {
-            document.getElementById('signup-screen').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'none';
-            document.getElementById('welcome-screen').style.display = 'block';
-            document.getElementById('welcome-title').innerText = `Welcome, ${username}!`;
-            
-            loadSavedChats();
-        }
-
-        function openChat() {
-            document.getElementById('welcome-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
+            currentUser = username;
+            users[username].online = true;
+            localStorage.setItem('chat_all_users', JSON.stringify(users));
+            localStorage.setItem('chat_logged_user', currentUser);
+            initApp();
         }
 
         function handleLogout() {
+            if (currentUser) {
+                let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+                if (users[currentUser]) {
+                    users[currentUser].online = false;
+                    localStorage.setItem('chat_all_users', JSON.stringify(users));
+                }
+            }
+            localStorage.removeItem('chat_logged_user');
+            currentUser = null;
+            currentChatUser = null;
             showScreen('login-screen');
         }
 
-        function loadSavedChats() {
-            const savedMessages = localStorage.getItem('chat_messages');
-            const messagesDiv = document.getElementById('chat-messages');
-            if (savedMessages) {
-                messagesDiv.innerHTML = savedMessages;
+        function initApp() {
+            showScreen('app-screen');
+            document.getElementById('current-user-display').innerText = currentUser;
+            loadChatList();
+        }
+
+        function loadChatList() {
+            const chatListEl = document.getElementById('chat-list');
+            chatListEl.innerHTML = '';
+
+            let chats = JSON.parse(localStorage.getItem(`chats_${currentUser}`) || '[]');
+            let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+
+            chats.forEach(username => {
+                const isOnline = users[username] ? users[username].online : false;
+                const item = document.createElement('div');
+                item.className = `chat-item ${currentChatUser === username ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span>${username}</span>
+                    <span class="status-dot ${isOnline ? 'online' : 'offline'}" title="${isOnline ? 'Online' : 'Offline'}"></span>
+                `;
+                item.onclick = () => selectChat(username);
+                chatListEl.appendChild(item);
+            });
+        }
+
+        function openNewChatPrompt() {
+            const username = prompt("Enter username to chat with:");
+            if (!username) return;
+
+            if (username === currentUser) {
+                alert("You cannot chat with yourself!");
+                return;
             }
+
+            let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+            if (!users[username]) {
+                alert("Account not found in the app!");
+                return;
+            }
+
+            let chats = JSON.parse(localStorage.getItem(`chats_${currentUser}`) || '[]');
+            if (!chats.includes(username)) {
+                chats.push(username);
+                localStorage.setItem(`chats_${currentUser}`, JSON.stringify(chats));
+            }
+
+            loadChatList();
+            selectChat(username);
+        }
+
+        function selectChat(username) {
+            currentChatUser = username;
+            document.getElementById('active-chat-title').innerText = username;
+            document.getElementById('chat-input-bar').style.display = 'flex';
+            loadMessages();
+            loadChatList();
+        }
+
+        function loadMessages() {
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '';
+
+            if (!currentChatUser) return;
+
+            let allMessages = JSON.parse(localStorage.getItem('chat_messages_global') || '{}');
+            let chatId = [currentUser, currentChatUser].sort().join('_');
+            let messages = allMessages[chatId] || [];
+
+            messages.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = `message-bubble ${msg.sender === currentUser ? 'user' : ''}`;
+                bubble.innerText = msg.text;
+                container.appendChild(bubble);
+            });
+
+            container.scrollTop = container.scrollHeight;
         }
 
         function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
-            if (!text) return;
+            if (!text || !currentChatUser) return;
 
-            const messagesDiv = document.getElementById('chat-messages');
-            const msgEl = document.createElement('div');
-            msgEl.className = 'message user';
-            msgEl.innerText = text;
-            messagesDiv.appendChild(msgEl);
+            let allMessages = JSON.parse(localStorage.getItem('chat_messages_global') || '{}');
+            let chatId = [currentUser, currentChatUser].sort().join('_');
+            
+            if (!allMessages[chatId]) {
+                allMessages[chatId] = [];
+            }
 
-            localStorage.setItem('chat_messages', messagesDiv.innerHTML);
+            allMessages[chatId].push({ sender: currentUser, text: text, timestamp: Date.now() });
+            localStorage.setItem('chat_messages_global', JSON.stringify(allMessages));
 
             input.value = '';
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            loadMessages();
         }
 
         function handleKeyPress(event) {
@@ -363,6 +487,20 @@
                 sendMessage();
             }
         }
+
+        // Auto-login if previously logged in
+        window.onload = () => {
+            const savedUser = localStorage.getItem('chat_logged_user');
+            if (savedUser) {
+                let users = JSON.parse(localStorage.getItem('chat_all_users') || '{}');
+                if (users[savedUser]) {
+                    currentUser = savedUser;
+                    users[savedUser].online = true;
+                    localStorage.setItem('chat_all_users', JSON.stringify(users));
+                    initApp();
+                }
+            }
+        };
     </script>
 </body>
 </html>
