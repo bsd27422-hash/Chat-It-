@@ -110,6 +110,12 @@
             display: none;
         }
 
+        /* Welcome / Transition Screen Styles */
+        #welcome-screen {
+            display: none;
+            text-align: center;
+        }
+
         /* Chat Interface Styles */
         #chat-screen {
             display: none;
@@ -190,7 +196,7 @@
 
     <!-- Sign Up Screen -->
     <div id="signup-screen" class="container">
-        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Create New Account (V6)</span></h2>
+        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Create New Account</span></h2>
         <div class="form-group">
             <label for="signup-username">Username</label>
             <input type="text" id="signup-username" placeholder="Choose a username">
@@ -208,7 +214,7 @@
             <input type="password" id="signup-verify-password" placeholder="••••••••">
             <div id="signup-error" class="error-msg">Passwords do not match!</div>
         </div>
-        <button onclick="handleSignUp()">Create Account & Launch</button>
+        <button onclick="handleSignUp()">Create Account</button>
         <div class="switch-text">
             Already have an account? <a onclick="showScreen('login-screen')">Log In</a>
         </div>
@@ -232,6 +238,14 @@
         </div>
     </div>
 
+    <!-- Welcome / Transition Screen -->
+    <div id="welcome-screen" class="container">
+        <h2 id="welcome-title">Welcome!</h2>
+        <p style="color: #adb5bd; margin-bottom: 24px;">You are successfully logged in.</p>
+        <button onclick="openChat()">Let's Chat</button>
+        <button class="logout-btn" onclick="handleLogout()" style="width: 100%; margin-top: 10px;">Log Out / Switch Account</button>
+    </div>
+
     <!-- Chat Interface Screen -->
     <div id="chat-screen" class="container">
         <div class="chat-header">
@@ -251,6 +265,7 @@
         function showScreen(screenId) {
             document.getElementById('signup-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('chat-screen').style.display = 'none';
             document.getElementById(screenId).style.display = 'flex';
         }
@@ -276,7 +291,7 @@
             const userData = { username, email, password };
             localStorage.setItem('chat_user', JSON.stringify(userData));
             
-            launchChat(username);
+            showWelcome(username);
         }
 
         function handleLogin() {
@@ -293,30 +308,37 @@
             const user = JSON.parse(savedData);
             if ((userInput === user.email || userInput === user.username) && password === user.password) {
                 errorDiv.style.display = 'none';
-                launchChat(user.username);
+                showWelcome(user.username);
             } else {
                 errorDiv.style.display = 'block';
             }
         }
 
-        function launchChat(username) {
+        function showWelcome(username) {
             document.getElementById('signup-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-            document.getElementById('chat-username').innerText = `Chat It ! (${username})`;
+            document.getElementById('chat-screen').style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'block';
+            document.getElementById('welcome-title').innerText = `Welcome, ${username}!`;
             
-            document.getElementById('signup-username').value = '';
-            document.getElementById('signup-email').value = '';
-            document.getElementById('signup-password').value = '';
-            document.getElementById('signup-verify-password').value = '';
-            document.getElementById('login-user').value = '';
-            document.getElementById('login-password').value = '';
-            document.getElementById('signup-error').style.display = 'none';
-            document.getElementById('login-error').style.display = 'none';
+            loadSavedChats();
+        }
+
+        function openChat() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'flex';
         }
 
         function handleLogout() {
             showScreen('login-screen');
+        }
+
+        function loadSavedChats() {
+            const savedMessages = localStorage.getItem('chat_messages');
+            const messagesDiv = document.getElementById('chat-messages');
+            if (savedMessages) {
+                messagesDiv.innerHTML = savedMessages;
+            }
         }
 
         function sendMessage() {
@@ -329,6 +351,8 @@
             msgEl.className = 'message user';
             msgEl.innerText = text;
             messagesDiv.appendChild(msgEl);
+
+            localStorage.setItem('chat_messages', messagesDiv.innerHTML);
 
             input.value = '';
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
