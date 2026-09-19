@@ -51,7 +51,7 @@
             font-size: 0.9rem;
             color: #94a3b8;
         }
-        input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
+        input[type="text"], input[type="email"], input[type="password"] {
             width: 100%;
             padding: 0.75rem;
             border-radius: 6px;
@@ -129,14 +129,6 @@
         <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Create New Account</h3>
         
         <div class="form-group">
-            <label for="su-username">Username (Account ID)</label>
-            <input type="text" id="su-username" placeholder="e.g. CyberNinja">
-        </div>
-        <div class="form-group">
-            <label for="su-display">Display Name</label>
-            <input type="text" id="su-display" placeholder="e.g. Alex ✨">
-        </div>
-        <div class="form-group">
             <label for="su-email">Email Address</label>
             <input type="email" id="su-email" placeholder="name@example.com">
         </div>
@@ -197,13 +189,14 @@
             getAuth, 
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
-            signInWithPopup, 
+            signInWithRedirect, 
+            getRedirectResult,
             GoogleAuthProvider, 
             signOut, 
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // TODO: Replace with your actual Firebase configuration from the Firebase Console
+        // Remember to replace with your actual Firebase configuration
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -230,8 +223,6 @@
         const googleLoginBtn = document.getElementById('google-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
 
-        const suUsername = document.getElementById('su-username');
-        const suDisplay = document.getElementById('su-display');
         const suEmail = document.getElementById('su-email');
         const suPassword = document.getElementById('su-password');
         const liEmail = document.getElementById('li-email');
@@ -241,7 +232,12 @@
         const loginError = document.getElementById('login-error');
         const userGreeting = document.getElementById('user-greeting');
 
-        // Monitor Firebase Auth state changes
+        // Handle Google redirect result when user returns back to the page
+        getRedirectResult(auth).catch((error) => {
+            console.error("Google redirect error:", error.message);
+        });
+
+        // Monitor Auth state changes
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userGreeting.textContent = user.displayName || user.email;
@@ -254,7 +250,6 @@
             }
         });
 
-        // Toggle forms
         toLogin.addEventListener('click', () => {
             signupContainer.classList.add('hidden');
             loginContainer.classList.remove('hidden');
@@ -267,7 +262,6 @@
             signupError.style.display = 'none';
         });
 
-        // Email/Password Signup
         signupBtn.addEventListener('click', async () => {
             const email = suEmail.value.trim();
             const password = suPassword.value.trim();
@@ -286,7 +280,6 @@
             }
         });
 
-        // Email/Password Login with "Account not available" error handling
         loginBtn.addEventListener('click', async () => {
             const identifier = liEmail.value.trim();
             const password = liPassword.value.trim();
@@ -300,16 +293,15 @@
             try {
                 await signInWithEmailAndPassword(auth, identifier, password);
             } catch (error) {
-                // If account doesn't exist or credentials mismatch, show required message
                 loginError.textContent = 'Account not available';
                 loginError.style.display = 'block';
             }
         });
 
-        // Real Google Authentication Popup
+        // Use Redirect instead of Popup for mobile browser stability
         const handleGoogleAuth = async () => {
             try {
-                await signInWithPopup(auth, googleProvider);
+                await signInWithRedirect(auth, googleProvider);
             } catch (error) {
                 alert('Google Sign-In failed: ' + error.message);
             }
@@ -318,7 +310,6 @@
         googleSignupBtn.addEventListener('click', handleGoogleAuth);
         googleLoginBtn.addEventListener('click', handleGoogleAuth);
 
-        // Logout Handler
         logoutBtn.addEventListener('click', async () => {
             await signOut(auth);
         });
