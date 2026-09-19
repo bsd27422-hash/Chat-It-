@@ -6,16 +6,16 @@
     <title>Chat It ! - V6 (Updated)</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --error-color: #ef4444;
-            --border-color: #334155;
+            --accent-color: #ff3366;
+            --card-bg: #25262b;
+            --text-color: #f8f9fa;
+            --accent-hover: #e02e5b;
+            --bg-color: #1a1b1e;
+            --border-color: #343a40;
         }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -23,259 +23,322 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
         }
+
         .container {
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 2rem;
+            padding: 30px;
             border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             box-sizing: border-box;
         }
-        h1 {
+
+        h2 {
             text-align: center;
-            margin-bottom: 1.5rem;
-            color: var(--accent-color);
+            margin-bottom: 24px;
+            color: var(--text-color);
         }
+
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
         }
+
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: #94a3b8;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #adb5bd;
         }
-        input[type="text"], input[type="email"], input[type="password"] {
+
+        input {
             width: 100%;
-            padding: 0.75rem;
-            border-radius: 6px;
+            padding: 12px;
             border: 1px solid var(--border-color);
-            background: #0f172a;
-            color: white;
+            border-radius: 8px;
+            background-color: #141517;
+            color: var(--text-color);
+            font-size: 16px;
             box-sizing: border-box;
         }
+
+        input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
         button {
             width: 100%;
-            padding: 0.75rem;
+            padding: 12px;
             background-color: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 1rem;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 0.75rem;
+            margin-top: 10px;
         }
+
         button:hover {
             background-color: var(--accent-hover);
         }
-        .switch-mode {
+
+        .switch-text {
             text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            color: #94a3b8;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #adb5bd;
+        }
+
+        .switch-text a {
+            color: var(--accent-color);
+            text-decoration: none;
             cursor: pointer;
         }
-        .switch-mode span {
-            color: var(--accent-color);
+
+        .switch-text a:hover {
             text-decoration: underline;
         }
+
         .error-msg {
-            color: var(--error-color);
-            font-size: 0.85rem;
-            text-align: center;
-            margin-top: 0.5rem;
+            color: #fa5252;
+            font-size: 13px;
+            margin-top: 6px;
             display: none;
         }
-        .hidden {
+
+        /* Chat Interface Styles */
+        #chat-screen {
             display: none;
+            flex-direction: column;
+            height: 90vh;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background-color: #141517;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            background-color: #2b2c33;
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-break: break-word;
+        }
+
+        .message.user {
+            background-color: var(--accent-color);
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .chat-input-area button {
+            width: auto;
+            margin: 0;
+            padding: 0 20px;
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: #adb5bd;
+            padding: 6px 12px;
+            width: auto;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background-color: #343a40;
+            color: white;
         }
     </style>
 </head>
 <body>
 
     <!-- Sign Up Screen -->
-    <div class="container" id="signup-container">
-        <h1>Chat It !</h1>
-        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Create New Account (V6)</h3>
-        
+    <div id="signup-screen" class="container">
+        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Create New Account (V6)</span></h2>
         <div class="form-group">
-            <label for="su-username">Username</label>
-            <input type="text" id="su-username" placeholder="Choose a username">
+            <label for="signup-username">Username</label>
+            <input type="text" id="signup-username" placeholder="Choose a username">
         </div>
         <div class="form-group">
-            <label for="su-email">Email Address</label>
-            <input type="email" id="su-email" placeholder="name@example.com">
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" placeholder="name@example.com">
         </div>
         <div class="form-group">
-            <label for="su-password">Password</label>
-            <input type="password" id="su-password" placeholder="••••••••">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" placeholder="••••••••">
         </div>
         <div class="form-group">
-            <label for="su-confirm-password">Verify Password</label>
-            <input type="password" id="su-confirm-password" placeholder="••••••••">
+            <label for="signup-verify-password">Verify Password</label>
+            <input type="password" id="signup-verify-password" placeholder="••••••••">
+            <div id="signup-error" class="error-msg">Passwords do not match!</div>
         </div>
-        
-        <button id="signup-btn">Create Account & Launch</button>
-        <div class="error-msg" id="signup-error"></div>
-
-        <div class="switch-mode">
-            Already have an account? <span id="to-login">Log In</span>
+        <button onclick="handleSignUp()">Create Account & Launch</button>
+        <div class="switch-text">
+            Already have an account? <a onclick="showScreen('login-screen')">Log In</a>
         </div>
     </div>
 
     <!-- Login Screen -->
-    <div class="container hidden" id="login-container">
-        <h1>Chat It !</h1>
-        <h3 style="text-align: center; margin-top: 0; color: #94a3b8;">Log In</h3>
-        
+    <div id="login-screen" class="container" style="display: none;">
+        <h2>Chat It !<br><span style="font-size: 15px; color: #adb5bd;">Log In</span></h2>
         <div class="form-group">
-            <label for="li-identifier">Email Address or Username</label>
-            <input type="text" id="li-identifier" placeholder="name@example.com or Username">
+            <label for="login-user">Email Address or Username</label>
+            <input type="text" id="login-user" placeholder="name@example.com or Username">
         </div>
         <div class="form-group">
-            <label for="li-password">Password</label>
-            <input type="password" id="li-password" placeholder="••••••••">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="••••••••">
+            <div id="login-error" class="error-msg">Account not available</div>
         </div>
-        
-        <button id="login-btn">Log In</button>
-        <div class="error-msg" id="login-error">Account not available</div>
-
-        <div class="switch-mode">
-            Don't have an account? <span id="to-signup">Create Account</span>
+        <button onclick="handleLogin()">Log In</button>
+        <div class="switch-text">
+            Don't have an account? <a onclick="showScreen('signup-screen')">Create Account</a>
         </div>
     </div>
 
-    <!-- Main App Screen -->
-    <div class="container hidden" id="app-container">
-        <h1>Welcome, <span id="user-greeting"></span>!</h1>
-        <p style="text-align: center; color: #94a3b8;">You are successfully logged in and connected to the multiverse.</p>
-        <button id="logout-btn" style="background-color: #ef4444;">Log Out / Switch Account</button>
+    <!-- Chat Interface Screen -->
+    <div id="chat-screen" class="container">
+        <div class="chat-header">
+            <h3 id="chat-username" style="margin: 0;">Chat Room</h3>
+            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="message">Welcome to Chat It ! Start messaging below.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="message-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
     </div>
 
     <script>
-        const signupContainer = document.getElementById('signup-container');
-        const loginContainer = document.getElementById('login-container');
-        const appContainer = document.getElementById('app-container');
-
-        const toLogin = document.getElementById('to-login');
-        const toSignup = document.getElementById('to-signup');
-
-        const signupBtn = document.getElementById('signup-btn');
-        const loginBtn = document.getElementById('login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        const suUsername = document.getElementById('su-username');
-        const suEmail = document.getElementById('su-email');
-        const suPassword = document.getElementById('su-password');
-        const suConfirmPassword = document.getElementById('su-confirm-password');
-
-        const liIdentifier = document.getElementById('li-identifier');
-        const liPassword = document.getElementById('li-password');
-        
-        const signupError = document.getElementById('signup-error');
-        const loginError = document.getElementById('login-error');
-        const userGreeting = document.getElementById('user-greeting');
-
-        // Check for active session
-        const savedSession = localStorage.getItem('chat_it_user');
-        if (savedSession) {
-            const userData = JSON.parse(savedSession);
-            userGreeting.textContent = userData.username || userData.email;
-            signupContainer.classList.add('hidden');
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+        function showScreen(screenId) {
+            document.getElementById('signup-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'none';
+            document.getElementById(screenId).style.display = 'flex';
         }
 
-        // Toggle forms
-        toLogin.addEventListener('click', () => {
-            signupContainer.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-            loginError.style.display = 'none';
-        });
+        function handleSignUp() {
+            const username = document.getElementById('signup-username').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const verifyPassword = document.getElementById('signup-verify-password').value;
+            const errorDiv = document.getElementById('signup-error');
 
-        toSignup.addEventListener('click', () => {
-            loginContainer.classList.add('hidden');
-            signupContainer.classList.remove('hidden');
-            signupError.style.display = 'none';
-        });
+            if (password !== verifyPassword) {
+                errorDiv.style.display = 'block';
+                return;
+            }
+            errorDiv.style.display = 'none';
 
-        // Sign Up Handler
-        signupBtn.addEventListener('click', () => {
-            const username = suUsername.value.trim();
-            const email = suEmail.value.trim();
-            const password = suPassword.value.trim();
-            const confirmPassword = suConfirmPassword.value.trim();
-
-            if (!username || !email || !password || !confirmPassword) {
-                signupError.textContent = 'Please fill in all fields.';
-                signupError.style.display = 'block';
+            if (!username || !email || !password) {
+                alert('Please fill in all fields');
                 return;
             }
 
-            if (password !== confirmPassword) {
-                signupError.textContent = 'Passwords do not match.';
-                signupError.style.display = 'block';
-                return;
-            }
-
-            const newUser = { username, email, password };
-            localStorage.setItem('chat_it_registered_user', JSON.stringify(newUser));
-            localStorage.setItem('chat_it_user', JSON.stringify(newUser));
-
-            userGreeting.textContent = username;
-            signupContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-        });
-
-        // Regular Login Handler with "Account not available" check
-        loginBtn.addEventListener('click', () => {
-            const identifier = liIdentifier.value.trim();
-            const password = liPassword.value.trim();
-
-            if (!identifier || !password) {
-                loginError.textContent = 'Please enter your login details.';
-                loginError.style.display = 'block';
-                return;
-            }
-
-            const registeredData = localStorage.getItem('chat_it_registered_user');
+            const userData = { username, email, password };
+            localStorage.setItem('chat_user', JSON.stringify(userData));
             
-            if (!registeredData) {
-                loginError.textContent = 'Account not available';
-                loginError.style.display = 'block';
+            launchChat(username);
+        }
+
+        function handleLogin() {
+            const userInput = document.getElementById('login-user').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            const savedData = localStorage.getItem('chat_user');
+            if (!savedData) {
+                errorDiv.style.display = 'block';
                 return;
             }
 
-            const registeredUser = JSON.parse(registeredData);
-
-            const matchesUser = (registeredUser.email === identifier || registeredUser.username === identifier);
-            const matchesPassword = (registeredUser.password === password);
-
-            if (matchesUser && matchesPassword) {
-                localStorage.setItem('chat_it_user', JSON.stringify(registeredUser));
-                userGreeting.textContent = registeredUser.username || registeredUser.email;
-                loginContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
+            const user = JSON.parse(savedData);
+            if ((userInput === user.email || userInput === user.username) && password === user.password) {
+                errorDiv.style.display = 'none';
+                launchChat(user.username);
             } else {
-                loginError.textContent = 'Account not available';
-                loginError.style.display = 'block';
+                errorDiv.style.display = 'block';
             }
-        });
+        }
 
-        // Logout Handler
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('chat_it_user');
-            appContainer.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-            liIdentifier.value = '';
-            liPassword.value = '';
-            loginError.style.display = 'none';
-        });
+        function launchChat(username) {
+            document.getElementById('signup-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('chat-screen').style.display = 'flex';
+            document.getElementById('chat-username').innerText = `Chat It ! (${username})`;
+            
+            document.getElementById('signup-username').value = '';
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-verify-password').value = '';
+            document.getElementById('login-user').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('signup-error').style.display = 'none';
+            document.getElementById('login-error').style.display = 'none';
+        }
+
+        function handleLogout() {
+            showScreen('login-screen');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messagesDiv = document.getElementById('chat-messages');
+            const msgEl = document.createElement('div');
+            msgEl.className = 'message user';
+            msgEl.innerText = text;
+            messagesDiv.appendChild(msgEl);
+
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
     </script>
 </body>
 </html>
