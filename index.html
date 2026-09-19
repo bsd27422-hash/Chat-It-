@@ -144,10 +144,6 @@
             <label for="su-password">Password</label>
             <input type="password" id="su-password" placeholder="••••••••">
         </div>
-        <div class="form-group">
-            <label for="su-pic">Profile Photo (Camera / Gallery)</label>
-            <input type="file" id="su-pic" accept="image/*">
-        </div>
         
         <button id="signup-btn">Create Account & Launch</button>
         <div class="error-msg" id="signup-error"></div>
@@ -194,7 +190,33 @@
         <button id="logout-btn" style="background-color: #ef4444;">Log Out / Switch Account</button>
     </div>
 
-    <script>
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // TODO: Replace with your actual Firebase configuration from the Firebase Console
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
         const signupContainer = document.getElementById('signup-container');
         const loginContainer = document.getElementById('login-container');
         const appContainer = document.getElementById('app-container');
@@ -219,17 +241,20 @@
         const loginError = document.getElementById('login-error');
         const userGreeting = document.getElementById('user-greeting');
 
-        // Check for active session
-        const savedSession = localStorage.getItem('chat_it_user');
-        if (savedSession) {
-            const userData = JSON.parse(savedSession);
-            userGreeting.textContent = userData.displayName || userData.username;
-            signupContainer.classList.add('hidden');
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
-        }
+        // Monitor Firebase Auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userGreeting.textContent = user.displayName || user.email;
+                signupContainer.classList.add('hidden');
+                loginContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+            } else {
+                appContainer.classList.add('hidden');
+                signupContainer.classList.remove('hidden');
+            }
+        });
 
-        // Toggle between forms
+        // Toggle forms
         toLogin.addEventListener('click', () => {
             signupContainer.classList.add('hidden');
             loginContainer.classList.remove('hidden');
@@ -242,31 +267,27 @@
             signupError.style.display = 'none';
         });
 
-        // Sign Up Handler
-        signupBtn.addEventListener('click', () => {
-            const username = suUsername.value.trim();
-            const displayName = suDisplay.value.trim() || username;
+        // Email/Password Signup
+        signupBtn.addEventListener('click', async () => {
             const email = suEmail.value.trim();
             const password = suPassword.value.trim();
 
-            if (!email || !password || !username) {
-                signupError.textContent = 'Please fill in all required fields.';
+            if (!email || !password) {
+                signupError.textContent = 'Please fill in email and password.';
                 signupError.style.display = 'block';
                 return;
             }
 
-            const newUser = { username, displayName, email, password };
-            // Save registered user database locally
-            localStorage.setItem('chat_it_registered_user', JSON.stringify(newUser));
-            localStorage.setItem('chat_it_user', JSON.stringify(newUser));
-
-            userGreeting.textContent = displayName;
-            signupContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                signupError.textContent = error.message;
+                signupError.style.display = 'block';
+            }
         });
 
-        // Regular Login Handler with "Account not available" check
-        loginBtn.addEventListener('click', () => {
+        // Email/Password Login with "Account not available" error handling
+        loginBtn.addEventListener('click', async () => {
             const identifier = liEmail.value.trim();
             const password = liPassword.value.trim();
 
@@ -276,49 +297,30 @@
                 return;
             }
 
-            const registeredData = localStorage.getItem('chat_it_registered_user');
-            
-            if (!registeredData) {
-                loginError.textContent = 'Account not available';
-                loginError.style.display = 'block';
-                return;
-            }
-
-            const registeredUser = JSON.parse(registeredData);
-
-            // Check if email or username matches and password matches
-            if ((registeredUser.email === identifier || registeredUser.username === identifier) && registeredUser.password === password) {
-                localStorage.setItem('chat_it_user', JSON.stringify(registeredUser));
-                userGreeting.textContent = registeredUser.displayName || registeredUser.username;
-                loginContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
-            } else {
+            try {
+                await signInWithEmailAndPassword(auth, identifier, password);
+            } catch (error) {
+                // If account doesn't exist or credentials mismatch, show required message
                 loginError.textContent = 'Account not available';
                 loginError.style.display = 'block';
             }
         });
 
-        // Google Authentication Simulation
-        const handleGoogleAuth = () => {
-            const googleUser = { username: 'GoogleUser', displayName: 'Google User ✨', email: 'user@gmail.com' };
-            localStorage.setItem('chat_it_user', JSON.stringify(googleUser));
-            userGreeting.textContent = googleUser.displayName;
-            signupContainer.classList.add('hidden');
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+        // Real Google Authentication Popup
+        const handleGoogleAuth = async () => {
+            try {
+                await signInWithPopup(auth, googleProvider);
+            } catch (error) {
+                alert('Google Sign-In failed: ' + error.message);
+            }
         };
 
         googleSignupBtn.addEventListener('click', handleGoogleAuth);
         googleLoginBtn.addEventListener('click', handleGoogleAuth);
 
         // Logout Handler
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('chat_it_user');
-            appContainer.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-            liEmail.value = '';
-            liPassword.value = '';
-            loginError.style.display = 'none';
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
         });
     </script>
 </body>
